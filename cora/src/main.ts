@@ -53,6 +53,18 @@ import {
 import { TextDocument } from "vscode-languageserver-textdocument";
 import { URI } from "vscode-uri";
 import { formatCoraDocument, formatCoraRange } from "./formatter";
+import {
+    builtinModuleDocs,
+    builtinModules,
+    createBuiltinBaseItems,
+    formatBuiltinModuleMarkdown,
+    getBuiltinMemberCompletionItems,
+    getBuiltinMemberDoc,
+    getBuiltinTopLevelFunctionDoc,
+    getMemberAccessContext,
+    keywordDocs,
+} from "./builtins";
+import { resolveModuleDefinition } from "./module";
 
 type CoraSettings = {
     diagnosticsEnabled: boolean;
@@ -82,108 +94,9 @@ const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 const settingsByUri = new Map<string, CoraSettings>();
 const parseCache = new Map<string, ParsedDocument>();
-const builtinModules = new Set(["io", "math", "vector", "exception"]);
+const workspaceRoots: string[] = [];
 
-const keywordDocs = new Map<string, string>([
-    ["class", "Declares a class type."],
-    ["fun", "Declares a function."],
-    ["import", "Imports a module namespace."],
-    ["let", "Declares a mutable variable."],
-    ["const", "Declares an immutable binding."],
-    ["pub", "Declares a public symbol."],
-    ["if", "Starts a conditional branch."],
-    ["else", "Fallback branch for conditionals."],
-    ["while", "Repeats while a condition is true."],
-    ["for", "Iterates over a range or c-style loop."],
-    ["return", "Returns from a function."],
-    ["break", "Breaks out of loop."],
-    ["continue", "Skips to next loop iteration."],
-    ["none", "Represents an empty value."],
-    ["true", "Boolean true literal."],
-    ["false", "Boolean false literal."],
-    ["this", "Current object instance."],
-]);
-
-const builtinItems: CompletionItem[] = [
-    "class",
-    "fun",
-    "import",
-    "let",
-    "const",
-    "pub",
-    "if",
-    "else",
-    "while",
-    "for",
-    "return",
-    "break",
-    "continue",
-    "and",
-    "or",
-    "not",
-].map((label) => ({ label, kind: CompletionItemKind.Keyword }))
-    .concat(
-        ["int", "float", "str", "string", "bool", "void", "job"].map((label) => ({
-            label,
-            kind: CompletionItemKind.TypeParameter,
-        })),
-    )
-    .concat(
-        ["range", "print", "string", "str", "float", "int", "bool"].map((label) => ({
-            label,
-            kind: CompletionItemKind.Function,
-        })),
-    )
-    .concat(
-        ["io", "math", "vector", "exception"].map((label) => ({
-            label,
-            kind: CompletionItemKind.Module,
-        })),
-    )
-    .concat([
-        {
-            label: "class",
-            kind: CompletionItemKind.Snippet,
-            detail: "class snippet",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "class ${1:Name} {\n\t$0\n}",
-        },
-        {
-            label: "fun",
-            kind: CompletionItemKind.Snippet,
-            detail: "function snippet",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "fun ${1:name}(${2:args}) -> ${3:void} {\n\t$0\n}",
-        },
-        {
-            label: "__add__",
-            kind: CompletionItemKind.Method,
-            detail: "operator overload",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "__add__(${1:other})",
-        },
-        {
-            label: "__sub__",
-            kind: CompletionItemKind.Method,
-            detail: "operator overload",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "__sub__(${1:other})",
-        },
-        {
-            label: "__mul__",
-            kind: CompletionItemKind.Method,
-            detail: "operator overload",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "__mul__(${1:value})",
-        },
-        {
-            label: "__eq__",
-            kind: CompletionItemKind.Method,
-            detail: "operator overload",
-            insertTextFormat: InsertTextFormat.Snippet,
-            insertText: "__eq__(${1:other})",
-        },
-    ]);
+const builtinItems: CompletionItem[] = createBuiltinBaseItems();
 
 const semanticTokenLegend = {
     tokenTypes: [
@@ -203,6 +116,15 @@ const semanticTokenLegend = {
 };
 
 connection.onInitialize((params: InitializeParams): InitializeResult => {
+    workspaceRoots.length = 0;
+    if (params.workspaceFolders && params.workspaceFolders.length > 0) {
+        for (const folder of params.workspaceFolders) {
+            workspaceRoots.push(URI.parse(folder.uri).fsPath);
+        }
+    } else if (params.rootUri) {
+        workspaceRoots.push(URI.parse(params.rootUri).fsPath);
+    }
+
     const result: InitializeResult = {
         capabilities: {
             textDocumentSync: documents.syncKind,
@@ -267,11 +189,25 @@ connection.onCompletion((params: CompletionParams): CompletionItem[] => {
         return builtinItems;
     }
 
+    const memberContext = getMemberAccessContext(doc, params.position);
+    if (memberContext) {
+        const memberItems = getBuiltinMemberCompletionItems(memberContext.moduleName);
+        if (memberItems.length > 0) {
+            return memberItems;
+        }
+    }
+
     const parsed = ensureParsed(doc);
     const symbolItems: CompletionItem[] = parsed.symbols.map((symbol) => ({
         label: symbol.name,
         detail: symbol.detail,
         kind: toCompletionKind(symbol.kind),
+        documentation: symbol.detail
+            ? {
+                kind: "markdown",
+                value: `**${symbol.name}**\\n\\n${symbol.detail}`,
+            }
+            : undefined,
     }));
 
     return [...builtinItems, ...symbolItems];
@@ -294,6 +230,42 @@ connection.onHover((params: HoverParams): Hover | null => {
             contents: {
                 kind: "markdown",
                 value: `**${word.text}**\\n\\n${keywordDoc}`,
+            },
+            range: word.range,
+        };
+    }
+
+    const memberContext = getMemberAccessContext(document, word.range.start);
+    if (memberContext) {
+        const builtinMember = getBuiltinMemberDoc(memberContext.moduleName, word.text);
+        if (builtinMember) {
+            return {
+                contents: {
+                    kind: "markdown",
+                    value: `**${memberContext.moduleName}.${builtinMember.name}**\\n\\n\`${builtinMember.signature}\`\\n\\n${builtinMember.documentation}`,
+                },
+                range: word.range,
+            };
+        }
+    }
+
+    const builtinModule = builtinModuleDocs.get(word.text);
+    if (builtinModule) {
+        return {
+            contents: {
+                kind: "markdown",
+                value: formatBuiltinModuleMarkdown(builtinModule),
+            },
+            range: word.range,
+        };
+    }
+
+    const builtinTopLevel = getBuiltinTopLevelFunctionDoc(word.text);
+    if (builtinTopLevel) {
+        return {
+            contents: {
+                kind: "markdown",
+                value: `**${builtinTopLevel.name}**\\n\\n\`${builtinTopLevel.signature}\`\\n\\n${builtinTopLevel.documentation}`,
             },
             range: word.range,
         };
@@ -383,6 +355,11 @@ connection.onDefinition((params: DefinitionParams): Definition | null => {
     const word = getWordAtPosition(doc, params.position);
     if (!word) {
         return null;
+    }
+
+    const moduleTarget = resolveModuleDefinition(doc, params.position, word.text, workspaceRoots, builtinModuleDocs);
+    if (moduleTarget) {
+        return [moduleTarget];
     }
 
     const locations = collectDefinitionLocations(word.text);
