@@ -1,0 +1,50 @@
+{
+  "colorizedBracketPairs": [],
+  "comments": {
+    "lineComment": "//",
+    "blockComment": ["\"*", "*\""]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["'", "'"],
+    ["\"", "\""],
+    ["\"*", "*\""],
+    ["\"\"\"", "\"\"\""]
+  ],
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"\"\"", "\"\"\""],
+    ["\"", "\""],
+    ["'", "'"]
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(class|fun)\\b.*$",
+      "end": "^\\s*\\}\\s*$"
+    }
+  },
+  "onEnterRules": [
+    {
+      "beforeText": {
+        "pattern": "",
+        "flags": "i"
+      },
+      "afterText": {
+        "pattern": "",
+        "flags": "i"
+      },
+      "action": {
+        "indent": "indent"
+      }
+    }
+  ]
+}
