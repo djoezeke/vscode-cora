@@ -1,0 +1,378 @@
+{
+    "name": "corascript",
+    "displayName": "CoraScript",
+    "version": "0.1.0-dev",
+    "description": "Cora language support for Visual Studio Code",
+    "author": {
+        "name": "Sackey Ezekiel Etrue"
+    },
+    "license": "MIT",
+    "icon": "cora-logo.png",
+    "categories": [
+        "Programming Languages",
+        "Snippets",
+        "Linters",
+        "Debuggers",
+        "Formatters",
+        "Testing"
+    ],
+    "galleryBanner": {
+        "color": "#F2F2F2",
+        "theme": "light"
+    },
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/doezeke/vscode-cora"
+    },
+    "bugs": {
+        "url": "https://github.com/doezeke/vscode-cora/issues"
+    },
+    "keywords": [
+        "multi-root ready",
+        "cora",
+        "coralang",
+        "corascript"
+    ],
+    "main": "./dist/client/extension.js",
+    "engines": {
+        "node": ">=16.14.2",
+        "vscode": "^1.100.0"
+    },
+    "scripts": {
+        "clean": "node -e \"const fs=require('fs'); fs.rmSync('dist',{recursive:true,force:true});\"",
+        "build": "npm run build:client && npm run build:server",
+        "build:client": "tsc -p tsconfig.client.json",
+        "build:server": "tsc -p tsconfig.server.json",
+        "watch": "npm run watch:all",
+        "watch:client": "tsc -w -p tsconfig.client.json",
+        "watch:server": "tsc -w -p tsconfig.server.json",
+        "watch:all": "tsc -b -w tsconfig.client.json tsconfig.server.json",
+        "compile": "npm run build",
+        "format": "prettier --write \"extention/src/**/*.ts\" \"cora/src/**/*.ts\"",
+        "vscode:prepublish": "npm run compile"
+    },
+    "devDependencies": {
+        "@types/node": "^20.16.9",
+        "@types/vscode": "^1.116.0",
+        "@vscode/vsce": "2.23.0",
+        "esbuild": "0.17.10",
+        "prettier": "2.2.1",
+        "typescript": "^5.6.3"
+    },
+    "dependencies": {
+        "vscode-languageclient": "^9.0.1",
+        "vscode-languageserver": "^9.0.1",
+        "vscode-languageserver-textdocument": "^1.0.12",
+        "vscode-uri": "^3.1.0"
+    },
+    "capabilities": {
+        "virtualWorkspaces": false,
+        "untrustedWorkspaces": {
+            "supported": false
+        }
+    },
+    "contributes": {
+        "languages": [
+            {
+                "id": "cora",
+                "aliases": [
+                    "Cora"
+                ],
+                "extensions": [
+                    ".cora"
+                ],
+                "configuration": "./extention/languages/cora.language-configuration.json"
+            },
+            {
+                "id": "cora.script",
+                "aliases": [
+                    "CoraScript"
+                ],
+                "extensions": [
+                    ".cs"
+                ],
+                "configuration": "./extention/languages/cora.language-configuration.json"
+            },
+            {
+                "id": "cora.template",
+                "aliases": [
+                    "Cora Template File"
+                ],
+                "extensions": [
+                    ".coratmpl"
+                ],
+                "configuration": "./extention/languages/cora.language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "cora",
+                "scopeName": "source.cora",
+                "path": "./extention/syntaxes/cora.tmLanguage.json"
+            },
+            {
+                "language": "cora.script",
+                "scopeName": "source.cora",
+                "path": "./extention/syntaxes/cora.tmLanguage.json"
+            },
+            {
+                "language": "cora.template",
+                "scopeName": "source.cora",
+                "path": "./extention/syntaxes/cora.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "cora",
+                "path": "./extention/snippets/cora.code-snippets"
+            }
+        ],
+        "configurationDefaults": {
+            "[cora]": {
+                "editor.insertSpaces": false,
+                "editor.formatOnSave": true
+            },
+            "[cora.script]": {
+                "editor.insertSpaces": false,
+                "editor.formatOnSave": true
+            },
+            "[cora.template]": {
+                "editor.insertSpaces": false,
+                "editor.formatOnSave": true
+            }
+        },
+        "configuration": {
+            "title": "CoraScript",
+            "properties": {
+                "corascript.index.maxFiles": {
+                    "type": "number",
+                    "default": 2000,
+                    "minimum": 100,
+                    "description": "Maximum number of .cora files indexed for workspace features."
+                },
+                "corascript.index.exclude": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": [
+                        "**/node_modules/**",
+                        "**/.git/**",
+                        "**/dist/**",
+                        "**/out/**"
+                    ],
+                    "description": "Glob-like exclude patterns for workspace indexing."
+                },
+                "corascript.diagnostics.enabled": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "Enable diagnostics reported by the CoraScript language server."
+                },
+                "corascript.interpreterPath": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to the CoraScript interpreter executable."
+                },
+                "corascript.trace.server": {
+                    "type": "string",
+                    "default": "off",
+                    "enum": [
+                        "off",
+                        "messages",
+                        "verbose"
+                    ],
+                    "description": "Trace communication between extension client and Cora language server."
+                }
+            }
+        },
+        "commands": [
+            {
+                "command": "corascript.showInterpreter",
+                "title": "CoraScript: Show Interpreter",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.selectInterpreter",
+                "title": "CoraScript: Select Interpreter",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.restartLanguageServer",
+                "title": "CoraScript: Restart Language Server",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.startLanguageServer",
+                "title": "CoraScript: Start Language Server",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.stopLanguageServer",
+                "title": "CoraScript: Stop Language Server",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.showServerOutput",
+                "title": "CoraScript: Show Language Server Output",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.runCurrentFile",
+                "title": "CoraScript: Run Current File",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.formatCurrentFile",
+                "title": "CoraScript: Format Current File",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.debugCurrentFile",
+                "title": "CoraScript: Debug Current File",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.refreshTests",
+                "title": "CoraScript: Refresh Tests",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.searchWorkspaceSymbols",
+                "title": "CoraScript: Search Workspace Symbols",
+                "category": "CoraScript"
+            },
+            {
+                "command": "corascript.createSampleFile",
+                "title": "CoraScript: Create Sample File",
+                "category": "CoraScript"
+            }
+        ],
+        "breakpoints": [
+            {
+                "language": "cora"
+            },
+            {
+                "language": "cora.script"
+            },
+            {
+                "language": "cora.template"
+            }
+        ],
+        "debuggers": [
+            {
+                "type": "cora",
+                "label": "Cora",
+                "program": "./dist/client/debug/adapter.js",
+                "runtime": "node",
+                "languages": [
+                    "cora",
+                    "cora.script",
+                    "cora.template"
+                ],
+                "variables": {},
+                "configurationSnippets": [
+                    {
+                        "label": "Cora: Debug current file",
+                        "description": "Launch debugger for the current Cora file",
+                        "body": {
+                            "type": "cora",
+                            "request": "launch",
+                            "name": "Debug Cora File",
+                            "program": "${file}",
+                            "cwd": "${workspaceFolder}",
+                            "interpreterPath": "${config:corascript.interpreterPath}",
+                            "args": []
+                        }
+                    }
+                ],
+                "configurationAttributes": {
+                    "launch": {
+                        "required": [
+                            "program"
+                        ],
+                        "properties": {
+                            "program": {
+                                "type": "string",
+                                "description": "Absolute path to the Cora file to debug."
+                            },
+                            "cwd": {
+                                "type": "string",
+                                "description": "Working directory for the debugged process."
+                            },
+                            "interpreterPath": {
+                                "type": "string",
+                                "description": "Path to the Cora interpreter executable.",
+                                "default": "${config:corascript.interpreterPath}"
+                            },
+                            "args": {
+                                "type": "array",
+                                "description": "Arguments passed to the Cora program.",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    },
+                    "attach": {
+                        "required": [],
+                        "properties": {}
+                    }
+                }
+            }
+        ],
+        "menus": {
+            "commandPalette": []
+        },
+        "views": {
+            "explorer": [],
+            "test": []
+        },
+        "taskDefinitions": [
+            {
+                "type": "cora",
+                "required": [
+                    "command"
+                ],
+                "properties": {
+                    "label": {
+                        "type": "string",
+                        "description": "The name of cora task."
+                    },
+                    "command": {
+                        "type": "string",
+                        "description": "The cora command to run.",
+                        "enum": [
+                            "run"
+                        ],
+                        "enumDescriptions": [
+                            "run from source/file"
+                        ],
+                        "default": "run"
+                    },
+                    "args": {
+                        "type": "array",
+                        "description": "additional arguments to pass to the cora command",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "options": {
+                        "type": "object",
+                        "description": "additional command options",
+                        "properties": {
+                            "cwd": {
+                                "type": "string",
+                                "description": "the current working directory of the executed program or script."
+                            },
+                            "env": {
+                                "type": "object",
+                                "markdownDescription": "Environment variables in the format of \"name\": \"value\"."
+                            }
+                        }
+                    }
+                }
+            }
+        ]
+    }
+}

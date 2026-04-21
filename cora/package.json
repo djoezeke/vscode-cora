@@ -1,0 +1,40 @@
+{
+  "name": "corascript",
+  "displayName": "CoraScript",
+  "version": "0.1.0-dev",
+  "description": "Cora language support for Visual Studio Code",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/doezeke/vscode-cora"
+  },
+  "bugs": {
+    "url": "https://github.com/doezeke/vscode-cora/issues"
+  },
+  "keywords": [
+    "cora",
+    "coralang",
+    "corascript"
+  ],
+  "scripts": {
+    "clean": "rm -rf ./dist/* && rm -rf ./out/* && rm -rf ./bin/* && rm *.vsix",
+    "build": "tsc -p tsconfig.json ",
+    "watch": "tsc -w -p tsconfig.json",
+    "compile": "npm run build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.9",
+    "@types/vscode": "^1.116.0",
+    "esbuild": "0.17.10",
+    "prettier": "2.2.1",
+    "typescript": "^5.6.3",
+    "@vscode/vsce": "2.23.0"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12",
+    "vscode-uri": "^3.1.0"
+  }
+}

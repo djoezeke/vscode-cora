@@ -2,7 +2,7 @@
   "colorizedBracketPairs": [],
   "comments": {
     "lineComment": "//",
-    "blockComment": ["\"*", "*\""]
+    "blockComment": ["/*", "*/"]
   },
   "brackets": [
     ["{", "}"],
@@ -15,7 +15,7 @@
     ["(", ")"],
     ["'", "'"],
     ["\"", "\""],
-    ["\"*", "*\""],
+    ["/*", "*/"],
     ["\"\"\"", "\"\"\""]
   ],
   "surroundingPairs": [
@@ -34,14 +34,7 @@
   },
   "onEnterRules": [
     {
-      "beforeText": {
-        "pattern": "",
-        "flags": "i"
-      },
-      "afterText": {
-        "pattern": "",
-        "flags": "i"
-      },
+      "beforeText": "^\\s*(class|fun|if|else|while|for)\\b.*(:|\\{)?\\s*$",
       "action": {
         "indent": "indent"
       }

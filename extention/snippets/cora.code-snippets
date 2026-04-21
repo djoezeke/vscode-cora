@@ -27,5 +27,36 @@
       "import ${1:module}"
     ],
     "description": "Insert a CoraScript import"
+  },
+  "If Else": {
+    "scope": "cora",
+    "prefix": "if",
+    "body": [
+      "if ${1:condition} {",
+      "    ${2}",
+      "} else:",
+      "    $0"
+    ],
+    "description": "Insert if/else block"
+  },
+  "For Range": {
+    "scope": "cora",
+    "prefix": "forr",
+    "body": [
+      "for ${1:item} in range(${2:0}, ${3:10}, ${4:1}):",
+      "    $0"
+    ],
+    "description": "Insert range for-loop"
+  },
+  "Operator Add": {
+    "scope": "cora",
+    "prefix": "opadd",
+    "body": [
+      "fun __add__(${1:other}) -> ${2:Self}",
+      "{",
+      "    $0",
+      "}"
+    ],
+    "description": "Insert __add__ operator overload"
   }
 }

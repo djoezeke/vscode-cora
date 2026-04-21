@@ -2,13 +2,14 @@
   "compilerOptions": {
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "dist",
-    "sourceMap": true,
     "target": "ES2022",
     "lib": ["ES2022"],
+    "outDir": "dist/server",
+    "rootDir": "cora/src",
+    "sourceMap": true,
     "strict": true,
     "esModuleInterop": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["cora/src/**/*.ts"],
   "exclude": ["node_modules", "dist", "out"]
 }

@@ -1,0 +1,7 @@
+extention/out
+extention/dist
+extention/node_modules
+extention/.vscode-test/
+extention/*.vsix
+extention/*.log
+*.cora

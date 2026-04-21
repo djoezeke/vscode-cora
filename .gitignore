@@ -1,6 +1,9 @@
-extention/out
-extention/dist
-extention/node_modules
-extention/.vscode-test/
-extention/*.vsix
-extention/*.log
+out/
+dist/
+node_modules
+.vscode-test/
+*.vsix
+*.log
+*.cora
+*.tsbuildinfo
+*.cora
