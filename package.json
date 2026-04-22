@@ -49,6 +49,7 @@
         "watch:server": "tsc -w -p tsconfig.server.json",
         "watch:all": "tsc -b -w tsconfig.client.json tsconfig.server.json",
         "compile": "npm run build",
+        "test:lsp": "node --test tests/**/*.test.js",
         "format": "prettier --write \"extention/src/**/*.ts\" \"cora/src/**/*.ts\"",
         "vscode:prepublish": "npm run compile"
     },

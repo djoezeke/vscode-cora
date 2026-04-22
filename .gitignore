@@ -7,3 +7,5 @@ node_modules
 *.cora
 *.tsbuildinfo
 *.cora
+*.cora
+tests/

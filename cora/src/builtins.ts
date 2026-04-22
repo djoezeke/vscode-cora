@@ -6,6 +6,7 @@ import {
     Range,
 } from "vscode-languageserver/node";
 import { TextDocument } from "vscode-languageserver-textdocument";
+import { codeBlock, joinMarkdownSections } from "./language/markdown";
 
 export type BuiltinMemberDoc = {
     name: string;
@@ -262,7 +263,11 @@ export function createBuiltinBaseItems(): CompletionItem[] {
             documentation: doc
                 ? {
                     kind: "markdown" as const,
-                    value: `**${doc.name}**\\n\\n\`${doc.signature}\`\\n\\n${doc.documentation}`,
+                    value: joinMarkdownSections(
+                        `**${doc.name}**`,
+                        codeBlock("cora", doc.signature),
+                        doc.documentation,
+                    ),
                 }
                 : undefined,
         };
@@ -274,7 +279,7 @@ export function createBuiltinBaseItems(): CompletionItem[] {
         detail: "builtin module",
         documentation: {
             kind: "markdown" as const,
-            value: `**${moduleDoc.name}**\\n\\n${moduleDoc.documentation}`,
+            value: joinMarkdownSections(`**${moduleDoc.name}**`, moduleDoc.documentation),
         },
     }));
 
@@ -372,7 +377,11 @@ export function getBuiltinMemberCompletionItems(moduleName: string): CompletionI
         detail: item.signature,
         documentation: {
             kind: "markdown" as const,
-            value: `**${moduleName}.${item.name}**\\n\\n\`${item.signature}\`\\n\\n${item.documentation}`,
+            value: joinMarkdownSections(
+                `**${moduleName}.${item.name}**`,
+                codeBlock("cora", item.signature),
+                item.documentation,
+            ),
         },
     }));
 
@@ -383,7 +392,7 @@ export function getBuiltinMemberCompletionItems(moduleName: string): CompletionI
             detail: `${classDoc.name}()`,
             documentation: {
                 kind: "markdown" as const,
-                value: `**${moduleName}.${classDoc.name}**\\n\\n${classDoc.documentation}`,
+                value: joinMarkdownSections(`**${moduleName}.${classDoc.name}**`, classDoc.documentation),
             },
         };
 
@@ -393,7 +402,11 @@ export function getBuiltinMemberCompletionItems(moduleName: string): CompletionI
             detail: method.signature,
             documentation: {
                 kind: "markdown" as const,
-                value: `**${moduleName}.${classDoc.name}.${method.name}**\\n\\n\`${method.signature}\`\\n\\n${method.documentation}`,
+                value: joinMarkdownSections(
+                    `**${moduleName}.${classDoc.name}.${method.name}**`,
+                    codeBlock("cora", method.signature),
+                    method.documentation,
+                ),
             },
         }));
 
@@ -409,7 +422,7 @@ export function formatBuiltinModuleMarkdown(moduleDoc: BuiltinModuleDoc): string
     if (moduleDoc.functions.length > 0) {
         sections.push("", "Functions:");
         for (const fn of moduleDoc.functions) {
-            sections.push(`- \`${fn.signature}\` — ${fn.documentation}`);
+            sections.push(`- ${codeBlock("cora", fn.signature)} — ${fn.documentation}`);
         }
     }
 
@@ -418,7 +431,7 @@ export function formatBuiltinModuleMarkdown(moduleDoc: BuiltinModuleDoc): string
         for (const classDoc of moduleDoc.classes) {
             sections.push(`- **${classDoc.name}** — ${classDoc.documentation}`);
             for (const method of classDoc.methods) {
-                sections.push(`  - \`${method.signature}\` — ${method.documentation}`);
+                sections.push(`  - ${codeBlock("cora", method.signature)} — ${method.documentation}`);
             }
         }
     }
